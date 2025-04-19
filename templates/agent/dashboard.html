@@ -84,11 +84,11 @@
         <form method="POST" action="{{ url_for('properties.delete_listing', listing_id=listing.id) }}" style="display:inline;">
             <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this listing?')">Delete</button>
         </form>
-      </div>
     </li>
     {% else %}
     <li class="list-group-item">No listings yet.</li>
     {% endfor %}
   </ul>
+      </div>
 </div>
 {% endblock %}
