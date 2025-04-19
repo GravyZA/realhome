@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block page_content %}
+<div class="card shadow p-4 mb-4">
+  <div class="text-center mb-3">
+    <img src="{{ url_for('static', filename='assets/rh_logo.png') }}" alt="RealHome Logo"
+         style="height: 120px;" class="mb-3">
+    <h1 class="fw-bold">Welcome to RealHome</h1>
+    <p class="lead text-muted">Find your dream property with ease.</p>
+    
+    <a href="{{ url_for('properties.dashboard') }}" class="btn btn-primary">🏘️ Browse Listings</a>
+  </div>
+</div>
+
+<div class="card shadow p-4">
+  <h5 class="fw-bold text-danger mb-3">📍 Listings Map</h5>
+  <div class="map-legend mt-3 small">
+    <span class="me-3"><span class="legend-dot" style="background-color: green;"></span> House</span>
+    <span class="me-3"><span class="legend-dot" style="background-color: blue;"></span> Apartment</span>
+    <span><span class="legend-dot" style="background-color: orange;"></span> Townhouse</span>
+  </div>
+  <div id="map" style="height: 500px;"></div>
+</div>
+
+
+<script>
+  const listings = {{ listings | tojson }};
+  const map = L.map('map').setView([-30.5595, 22.9375], 5); // South Africa center
+
+  // Base tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Type-color mapping
+  const typeColors = {
+    Apartment: 'blue',
+    House: 'green',
+    Townhouse: 'orange',
+    Default: 'gray'
+  };
+
+  const markers = L.markerClusterGroup();
+  const bounds = L.latLngBounds();
+
+  listings.forEach(listing => {
+    if (listing.latitude && listing.longitude) {
+      const color = typeColors[listing.type] || typeColors.Default;
+
+      const marker = L.circleMarker([listing.latitude, listing.longitude], {
+        radius: 8,
+        fillColor: color,
+        color: color,
+        fillOpacity: 0.9,
+        weight: 2
+      }).bindPopup(`
+        <strong><a href="/detail/${listing.id}" target="_blank">${listing.title}</a></strong><br>
+        ${listing.location}<br>
+        <em>${listing.type}</em><br>
+        <strong>R${listing.price ? Number(listing.price).toLocaleString() : 'N/A'}</strong>
+      `);
+
+      marker.bindTooltip(listing.title);
+      markers.addLayer(marker);
+      bounds.extend([listing.latitude, listing.longitude]);
+    }
+  });
+
+  map.addLayer(markers);
+  if (bounds.isValid()) {
+    map.fitBounds(bounds, {
+      padding: [50, 50],      // Smooth spacing around markers
+      maxZoom: 14             // Prevents zooming in *too* close if markers are tight
+    });
+  } else {
+    map.setView([-30.5595, 22.9375], 5); // Fallback to South Africa center
+  }
+
+</script>
+{% endblock %}

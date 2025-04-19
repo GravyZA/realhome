@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block page_content %}
+<div class="d-flex justify-content-center py-4">
+  <div class="card shadow-lg rounded-4 p-4 w-100" style="max-width: 1400px;">
+    <div class="row">
+      <!-- Property Details + Buttons + Agent Info -->
+      <div class="col-lg-6 mb-4 d-flex flex-column justify-content-between">
+        <div>
+          <h2 class="mb-4">{{ listing.title }}</h2>
+
+          <p><strong>Price:</strong> R{{ "{:,.0f}".format(listing.price) }}</p>
+          <p><strong>Location:</strong> {{ listing.location }}</p>
+          <p><strong>Beds:</strong> {{ listing.beds }} | <strong>Baths:</strong> {{ listing.baths }}</p>
+
+          <p><strong>Description:</strong><br>
+          {{ listing.description }}</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a href="{{ url_for('properties.dashboard') }}" class="btn btn-outline-secondary">
+            ← Back to Listings
+          </a>
+          {% set liked = listing.wishlisted_by|selectattr('user_id', 'equalto', session.user_id)|list|length > 0 %}
+          <button class="btn btn-outline-danger like-btn"
+                  data-id="{{ listing.id }}"
+                  aria-pressed="{{ 'true' if liked else 'false' }}"
+                  title="{{ 'Remove from wishlist' if liked else 'Add to wishlist' }}">
+            <span class="heart-icon" data-heart="{{ '❤️' if liked else '🤍' }}"></span>
+          </button>
+          <button class="btn btn-outline-primary">📞 Contact Agent</button>
+        </div>
+        <!-- Agent Contact Card -->
+        {% if listing.agent %}
+        <div class="card border shadow-sm mt-4" style="max-width: 540px;">
+          <div class="row g-0 align-items-center">
+            <div class="col-auto p-3">
+              {% if listing.agent.agent_profile and listing.agent.agent_profile.profile_image %}
+              <img src="{{ url_for('static', filename=listing.agent.agent_profile.profile_image) }}" class="rounded-circle"
+                style="width: 80px; height: 80px; object-fit: cover;" alt="Agent Photo">
+              {% else %}
+              <img src="{{ url_for('static', filename='assets/default-profile.jpg') }}" class="rounded-circle"
+                style="width: 80px; height: 80px; object-fit: cover;" alt="Default Agent">
+              {% endif %}
+            </div>
+            <div class="col p-3">
+              <h6 class="mb-1">🏢 Listed By</h6>
+              <p class="mb-1 fw-bold">{{ listing.agent.name }}</p>
+              <p class="mb-0">
+                📧 <a href="mailto:{{ listing.agent.email }}">{{ listing.agent.email }}</a><br>
+                {% if listing.agent.agent_profile and listing.agent.agent_profile.phone %}
+                📞 {{ listing.agent.agent_profile.phone }}
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Main Image + Carousel -->
+      <div class="col-lg-6 d-flex flex-column align-items-center">
+        <!-- Hero Image -->
+        <img id="mainImage"
+             src="{{ url_for('static', filename=listing.image if listing.image else 'assets/default.jpg') }}"
+             class="img-fluid rounded shadow mb-3"
+             style="width: 100%; max-width: 640px; height: 420px; object-fit: cover;"
+             alt="Property Image">
+
+        <!-- Carousel -->
+        {% if listing.additional_images %}
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+          {% for img in listing.additional_images %}
+          <img src="{{ url_for('static', filename='assets/' ~ listing.id ~ '/additional/' ~ img.filename) }}"
+               class="img-thumbnail"
+               style="width: 100px; height: 75px; object-fit: cover; cursor: pointer;"
+               alt="Thumbnail"
+               onclick="updateMainImage(this.src)">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="card mt-4 border shadow-sm">
+        <div class="card-header bg-white fw-bold">🗺️ Location Map</div>
+        <div class="card-body p-0">
+          <div id="map" style="width: 100%; height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateMainImage(src) {
+    const main = document.getElementById('mainImage');
+    if (main) {
+      main.src = src;
+    }
+  }
+</script>
+
+{% if listing.latitude and listing.longitude %}
+<script>
+  const map = L.map('map').setView([{{ listing.latitude }}, {{ listing.longitude }}], 13);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Add a marker
+  L.marker([{{ listing.latitude }}, {{ listing.longitude }}])
+    .addTo(map)
+    .bindPopup("<b>{{ listing.title }}</b><br>{{ listing.location }}")
+    .openPopup();
+</script>
+{% endif %}
+
+
+{% endblock %}

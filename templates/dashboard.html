@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block page_content %}
+<div class="card shadow-sm p-4 rounded-4" style="background-color: #ffffffee;">
+  <h2 class="mb-4">Property Listings</h2>
+
+  {% if session.user_name %}
+    <div class="alert alert-info">
+      👤 Logged in as: <strong>{{ session.user_name }}</strong> ({{ session.user_role }})
+    </div>
+  {% endif %}
+
+  <!-- 🔹 FILTER BAR INSIDE A CARD -->
+  <div class="card bg-light p-3 mb-4 rounded-3">
+    <form class="row g-3 align-items-end" method="GET">
+      <div class="col-md-3">
+        <label class="form-label">Location</label>
+        <input type="text" name="location" class="form-control" placeholder="City or Suburb"
+               value="{{ request.args.get('location', '') }}">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Property Type</label>
+        <select name="type" class="form-select">
+          <option value="">All Types</option>
+          <option value="Apartment" {% if request.args.get('type') == 'Apartment' %}selected{% endif %}>Apartment</option>
+          <option value="House" {% if request.args.get('type') == 'House' %}selected{% endif %}>House</option>
+          <option value="Townhouse" {% if request.args.get('type') == 'Townhouse' %}selected{% endif %}>Townhouse</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Min Price</label>
+        <input type="number" class="form-control" name="min_price"
+               value="{{ request.args.get('min_price', '') }}">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Max Price</label>
+        <input type="number" class="form-control" name="max_price"
+               value="{{ request.args.get('max_price', '') }}">
+      </div>
+
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 🔻 LISTINGS -->
+  <div class="d-flex flex-wrap justify-content-center gap-4">
+    {% for listing in properties %}
+      <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+        <div class="card property-card w-100 rounded-4 shadow-sm d-flex flex-column justify-content-between">
+
+          <img src="{{ url_for('static', filename=listing.image) }}"
+               class="card-img-top rounded-top" style="height: 200px; object-fit: cover;"
+               alt="Property image">
+
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ listing.title }}</h5>
+            <p class="card-text text-muted mb-2">{{ listing.description[:80] }}...</p>
+            <p class="mb-1"><strong>Type:</strong> {{ listing.type }}</p>
+            <p class="mb-1"><strong>Price:</strong> R{{ "{:,.0f}".format(listing.price) }}</p>
+            <p class="mb-2">{{ listing.beds }} Bed | {{ listing.baths }} Bath</p>
+          </div>
+
+          <div class="location-footer">
+            {{ listing.location }}
+          </div>
+      
+          <div class="card-actions">
+            <button class="btn btn-sm like-btn" data-id="{{ listing.id }}" aria-pressed="{{ 'true' if listing.id in liked_ids else 'false' }}" title="{{ 'Remove from wishlist' if listing.id in liked_ids else 'Add to wishlist' }}">
+              <span class="heart-icon" data-heart="{{ '❤️' if listing.id in liked_ids else '🤍' }}"></span>
+            </button>
+            <a href="{{ url_for('properties.detail', listing_id=listing.id) }}" class="btn btn-primary">View Details</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block page_content %}
+<h2 class="mb-4">Add New Listing</h2>
+
+<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input name="title" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Main Listing Image</label>
+    <input type="file" name="main_image" class="form-control" accept="image/*" required>
+  </div>
+  
+  <div class="mb-3">
+    <label class="form-label">Additional Images (Optional)</label>
+    <input type="file" name="additional_images" class="form-control" accept="image/*" multiple>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control" rows="4" required></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Property Type</label>
+    <select name="type" class="form-select" required>
+      <option value="Apartment">Apartment</option>
+      <option value="House">House</option>
+      <option value="Townhouse">Townhouse</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Price</label>
+    <input name="price" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Beds</label>
+    <input type="number" name="beds" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Baths</label>
+    <input type="number" name="baths" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Location</label>
+    <input name="location" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-success">Add Listing</button>
+</form>
+{% endblock %}

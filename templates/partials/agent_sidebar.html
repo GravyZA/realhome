@@ -1,0 +1,14 @@
+<div class="list-group">
+    <div class="list-group-item active">
+      🧑‍💼 Agent Panel
+    </div>
+    <a href="{{ url_for('auth.agent_dashboard') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'auth.agent_dashboard' %}active{% endif %}">
+      🏠 Dashboard
+    </a>
+    <a href="{{ url_for('properties.add_listing') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'properties.add_listing' %}active{% endif %}">
+      ➕ Add Listing
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action text-danger">
+      🚪 Logout
+    </a>
+  </div>
